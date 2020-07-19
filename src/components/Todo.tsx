@@ -12,8 +12,32 @@ import * as Yup from 'yup';
 
 import './todo.css';
 
-export const CreateForm = () => {
+export const CreateForm = ({ onSubmit }: any) => {
   const [todoList, setTodoList] = useRecoilState(todoState);
+
+  if (!onSubmit) {
+    onSubmit = (values: {item: {content: string}}, { resetForm, setFieldError }: {resetForm: Function, setFieldError: Function}) => {
+      if (values.item.content === "") {
+        return setFieldError('item.content', 'Todo content is required.')
+      } else if (todoList.findIndex(item => item.content === values.item.content) !== -1) {
+        return setFieldError('item.content', 'A todo item with this input already exists.');
+      }
+
+      
+      setTodoList(old => {
+        const updated = [
+          ...old,
+          { ...values.item, completed: false, id: generateId() }
+        ]
+
+        store.set('recoil-state-todoList', updated)
+
+        return updated
+      });
+
+      resetForm();
+    }
+  }
 
   return (
     <>
@@ -25,27 +49,7 @@ export const CreateForm = () => {
           })
         })}
 
-        onSubmit={(values, { resetForm, setFieldError }) => {
-          if (values.item.content === "") {
-            return setFieldError('item.content', 'Todo content is required.')
-          } else if (todoList.findIndex(item => item.content === values.item.content) !== -1) {
-            return setFieldError('item.content', 'A todo item with this input already exists.');
-          }
-
-          
-          setTodoList(old => {
-            const updated = [
-              ...old,
-              { ...values.item, completed: false, id: generateId() }
-            ]
-
-            store.set('recoil-state-todoList', updated)
-
-            return updated
-          });
-
-          resetForm();
-        }}
+        onSubmit={onSubmit}
       >
         {({ errors, touched, values }) => 
           <>
