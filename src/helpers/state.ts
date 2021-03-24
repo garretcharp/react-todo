@@ -1,9 +1,17 @@
+const safeParse = (data) => {
+  try {
+    return JSON.parse(data)
+  } catch (_) {
+    return {}
+  }
+}
+
 export const store = {
   each: (cb: Function) => {
     Object.keys(localStorage).forEach(key => {
       const element = localStorage[key]
 
-      cb(JSON.parse(element), key)
+      cb(safeParse(element), key)
     })
   },
   set: (key: string, value: any) => {
@@ -14,7 +22,7 @@ export const store = {
 export const initializeState = ({ set }: any) => {
   store.each((item: any, key: any) => {
     if (key.startsWith('recoil-state-')) {
-      set({ key: key.replace('recoil-state-', '') }, item);
+      set({ key: key.replace('recoil-state-', '') }, item)
     }
   })
-};
+}
